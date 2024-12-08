@@ -274,3 +274,90 @@ place:
 After the IRET instruction, the machine continues fetch-execute cycle, but in the unprivileged mode. Note that the change of machine mode 
 from privileged to unprivileged happens before the actual fetch-execution cycle. Thus, to understand how an instruction works, one needs to 
 know how paging and address translation works. 
+
+
+
+
+
+
+main stage work:
+
+
+
+process of writing hello world in assembly language to block 0 of the disk so that when the rom boot occurs, it loads the block containing 
+this hello world (block 0) and shows the output
+
+Create the assembly program to print "HELLO_WORLD".
+The assembly code to print "HELLO_WORLD" :
+
+MOV R0, "HELLO_WORLD"
+MOV R16, R0
+PORT P1, R16
+OUT
+HALT 
+
+what this does is move hello world to r0. then it copies it to r16 and then using the port function , it is copied to output port (p1) and 
+it is printed using the OUT function. Then the execution is halted using the HALT function.
+
+it is copied from r0 to r16 because r16-r19 are reserved for the spl and hence we use it .
+
+save this by making a folder in spl named spl_progs .
+Load the file as OS Startup code to disk.xfs using XFS-Interface. Invoke the XFS interface and use the following command to load the OS 
+Startup Code
+
+cd $HOME/myexpos/xfs-interface
+./xfs-interface
+# load --os $HOME/myexpos/spl/spl_progs/helloworld.xsm
+# exit
+
+
+load --os loads the file to block 0 of the XFS disk.
+
+
+
+Run the machine
+
+cd $HOME/myexpos/xsm
+./xsm
+
+The XSM simulator given to you is an assembly language interpeter for XSM. Hence, it is possible to load and run assembly 
+language programs on the simulator (unlike real systems where binary programs need to be supplied).
+
+
+Assignment question
+Write an assembly program to print numbers from 1 to 20 and run it as the OS Startup code.
+
+
+// OS Startup Code to print numbers from 1 to 20
+MOV R0, 1          // Initialize R0 to 1 (starting number)
+MOV R1, 20         // Initialize R1 to 20 (ending number)
+
+PRINT_LOOP:
+    MOV R2, R0      //Move the number to R2 (making a copy since the LE changes the value in first register)
+    MOV R16, R2     // Move the current number to R2 (print register)
+    PORT P1, R16    // Output the number to Port P1
+    OUT            // print output
+    INR R0         // Increment R0 by 1
+    INR R2         // Increment R2 by 1
+    LE R2, R1     // Compare R2 with R1. R2 has 1 if R2 <= R1.
+    JZ R2,END        // If R2=0, jump to END
+    JMP PRINT_LOOP // Otherwise, continue the loop
+
+END:
+    HALT           // Stop the program
+
+
+note: There should not be any comments on the same line as a command. It should be done on the next line.
+
+save the code in spl_progs. name the file print1to20.xsm
+
+now load the code using 
+cd $HOME/myexpos/xfs-interface
+./xfs-interface
+# load --os $HOME/myexpos/spl/spl_progs/print1to20.xsm
+# exit
+
+now run the xsm :
+../xsm/xsm (assuming u are currently inside the xfs-interface folder)
+
+.
